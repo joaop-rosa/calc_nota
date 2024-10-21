@@ -80,9 +80,16 @@ class _TarefasViewState extends State<TarefaView> {
                 // Cada item da lista é um ListTile, que é um widget de linha simples com título, subtítulo, e um campo de entrada de texto.
                 return ListTile(
                   title: Text(tarefa.titulo), // Exibe o título da tarefa.
-                  subtitle: Text(
-                      'Peso: ${tarefa.peso}'), // Exibe o peso da tarefa como subtítulo.
-
+                  subtitle: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start, // Alinha à esquerda
+                    children: [
+                      if (tarefa.timestamp != null)
+                        Text(
+                            'Ultima edição: ${tarefa.timestamp?.toUtc().day}/${tarefa.timestamp?.toUtc().month}/${tarefa.timestamp?.toUtc().year} ${tarefa.timestamp?.toUtc().add(const Duration(hours: -3)).hour}:${tarefa.timestamp?.toUtc().minute}'), // Adiciona o widget se timestamp existir
+                      Text('Peso: ${tarefa.peso}')
+                    ],
+                  ),
                   // trailing é um widget que aparece no final da linha. Aqui, contém um TextField para inserir a nota da tarefa.
                   trailing: SizedBox(
                     width: 100, // Define a largura do campo de texto.
