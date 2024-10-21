@@ -45,23 +45,35 @@ class TarefaDao {
     // Comando SQL para criar a tabela 'tarefas' com suas colunas e tipos de dados
     await db.execute('''
       CREATE TABLE tarefas (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,  // Chave primária auto-incrementada
-        tipo TEXT,                             // Coluna 'tipo' para armazenar o tipo de tarefa
-        titulo TEXT,                           // Coluna 'titulo' para armazenar o título da tarefa
-        periodo TEXT,                          // Coluna 'periodo' para armazenar o período da tarefa
-        peso REAL,                             // Coluna 'peso' para armazenar o peso da tarefa
-        nota REAL,                             // Coluna 'nota' para armazenar a nota atribuída à tarefa
-        timestamp TEXT                         // Coluna 'timestamp' para armazenar a data/hora
-      )
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          tipo TEXT,
+          titulo TEXT,
+          periodo TEXT,
+          peso REAL,
+          nota REAL,
+          timestamp TEXT
+      );
     ''');
   }
 
-  // Função para inserir uma nova tarefa no banco de dados
   Future<void> inserirTarefa(Tarefa tarefa) async {
-    // Obtém a instância do banco de dados
     final db = await instance.database;
-    // Insere a tarefa convertida em JSON na tabela 'tarefas'
-    await db.insert('tarefas', tarefa.toJson());
+
+    final List<Map<String, dynamic>> result = await db.query(
+      'tarefas',
+      where: 'titulo = ?',
+      whereArgs: [tarefa.titulo],
+    );
+
+    if (result.isEmpty) {
+      await db.insert('tarefas', tarefa.toJson());
+    }
+  }
+
+  Future<void> atualizaTarefa(Tarefa tarefa) async {
+    final db = await instance.database;
+    await db.update('tarefas', tarefa.toJson(),
+        where: 'titulo = ?', whereArgs: [tarefa.titulo]);
   }
 
   // Função para listar todas as tarefas armazenadas no banco de dados
@@ -70,6 +82,14 @@ class TarefaDao {
     final db = await instance.database;
     // Consulta todos os registros da tabela 'tarefas'
     final result = await db.query('tarefas');
+    // Converte cada registro em um objeto Tarefa e retorna a lista de tarefas
+    return result.map((json) => Tarefa.fromJson(json)).toList();
+  }
+
+  Future<List<Tarefa>> listarTarefasFiltradas(String filtro) async {
+    final db = await instance.database;
+    final result = await db.query('tarefas',
+        where: 'titulo LIKE ?', whereArgs: ['%$filtro%'], distinct: true);
     // Converte cada registro em um objeto Tarefa e retorna a lista de tarefas
     return result.map((json) => Tarefa.fromJson(json)).toList();
   }

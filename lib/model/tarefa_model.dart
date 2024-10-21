@@ -21,6 +21,9 @@ class Tarefa {
       titulo: json['titulo'],
       periodo: json['periodo'],
       peso: json['peso'].toDouble(),
+      nota: json['nota']?.toDouble(),
+      timestamp:
+          json['timestamp'] != null ? DateTime.parse(json['timestamp']) : null,
     );
   }
 
@@ -34,5 +37,11 @@ class Tarefa {
       'nota': nota,
       'timestamp': timestamp?.toIso8601String(),
     };
+  }
+
+  @override
+  String toString() {
+    return 'Tarefa(tipo: $tipo, titulo: $titulo, periodo: $periodo, peso: $peso, '
+        'nota: ${nota ?? 'N/A'}, timestamp: ${timestamp?.toIso8601String() ?? 'N/A'})';
   }
 }

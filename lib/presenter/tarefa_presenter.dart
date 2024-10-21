@@ -12,7 +12,10 @@ class TarefaPresenter {
   Future<List<Tarefa>> carregarTarefas() async {
     final jsonString = await rootBundle.loadString('assets/notas.json');
     final List<dynamic> jsonData = json.decode(jsonString);
-    return jsonData.map((item) => Tarefa.fromJson(item)).toList();
+    final tarefas = jsonData.map((item) => Tarefa.fromJson(item)).toList();
+    salvarTarefas(tarefas);
+    final tarefasDb = await db.listarTarefas();
+    return tarefasDb;
   }
 
   // Calcular a nota final
@@ -26,5 +29,17 @@ class TarefaPresenter {
       tarefa.timestamp = DateTime.now();
       await db.inserirTarefa(tarefa);
     }
+  }
+
+  Future<void> atualizarTarefas(List<Tarefa> tarefas) async {
+    for (var tarefa in tarefas) {
+      tarefa.timestamp = DateTime.now();
+      await db.atualizaTarefa(tarefa);
+    }
+  }
+
+  Future<List<Tarefa>> listarTarefaPorNome(String tarefaNome) async {
+    var tarefasFiltradas = await db.listarTarefasFiltradas(tarefaNome);
+    return tarefasFiltradas;
   }
 }
