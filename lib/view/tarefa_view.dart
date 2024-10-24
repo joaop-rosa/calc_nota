@@ -1,3 +1,4 @@
+import 'package:aula11_calc/model/calculo_model.dart';
 import 'package:aula11_calc/model/tarefa_model.dart';
 import 'package:aula11_calc/presenter/tarefa_presenter.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class TarefaView extends StatefulWidget {
 
 class _TarefasViewState extends State<TarefaView> {
   late Future<List<Tarefa>> _tarefas;
+  late Future<Calculo> _calculo;
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -20,6 +22,7 @@ class _TarefasViewState extends State<TarefaView> {
     super.initState();
     setState(() {
       _tarefas = widget.presenter.carregarTarefas();
+      _calculo = widget.presenter.listarCalculo();
     });
   }
 
@@ -111,7 +114,34 @@ class _TarefasViewState extends State<TarefaView> {
               },
             );
           },
-        ))
+        )),
+        Column(
+          children: [
+            const Text('Nota final'),
+            FutureBuilder<Calculo>(
+              future: _calculo,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return const Text('Erro ao carregar o cálculo');
+                } else if (snapshot.hasData) {
+                  final calculo = snapshot.data!;
+                  return Column(
+                    children: [
+                      Text(calculo.nota?.toStringAsPrecision(2).toString() ??
+                          '---'),
+                      Text(
+                          'Ultimo calculo: ${calculo.timestamp?.toUtc().day}/${calculo.timestamp?.toUtc().month}/${calculo.timestamp?.toUtc().year} ${calculo.timestamp?.toUtc().add(const Duration(hours: -3)).hour}:${calculo.timestamp?.toUtc().minute}')
+                    ],
+                  );
+                } else {
+                  return const Text('Nenhum cálculo encontrado');
+                }
+              },
+            ),
+          ],
+        )
       ]),
       // floatingActionButton é um botão de ação flutuante que permite ao usuário salvar as notas.
       floatingActionButton: FloatingActionButton(
@@ -123,6 +153,7 @@ class _TarefasViewState extends State<TarefaView> {
           await widget.presenter.atualizarTarefas(tarefas);
           setState(() {
             _tarefas = widget.presenter.listarTarefaPorNome(_controller.text);
+            _calculo = widget.presenter.listarCalculo();
           });
 
           // Após salvar as notas, exibe uma mensagem de confirmação usando SnackBar.
